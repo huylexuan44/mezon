@@ -5,20 +5,24 @@ import {
 	defaultNotificationCategoryActions,
 	notificationSettingActions,
 	selectAllchannelCategorySetting,
+	selectCategoryEntityStateByClanId,
+	selectChannelsEntitiesByClanId,
 	selectCurrentChannel,
 	selectCurrentClanId,
 	selectCurrentClanName,
 	selectDefaultNotificationClanByClanId,
 	selectNotifiSettingsEntitiesById,
+	selectOverrideChannelNotificationMuteSeconds,
 	useAppDispatch,
 	useAppSelector
 } from '@mezon/store';
-import { Button } from '@mezon/ui';
+import { Button, Icons } from '@mezon/ui';
 import type { ICategoryChannel, IChannel } from '@mezon/utils';
-import React, { useEffect, useRef, useState } from 'react';
+import { EMuteState } from '@mezon/utils';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import Creatable from 'react-select/creatable';
+import Select from 'react-select';
 import { ModalLayout } from '../../components';
 import { createNotificationTypesListTranslated } from '../PanelChannel';
 export type ModalParam = {
@@ -85,22 +89,59 @@ const ModalNotificationSetting = (props: ModalParam) => {
 	const notificatonSelected = useAppSelector((state) => selectNotifiSettingsEntitiesById(state, currentChannel?.id || ''));
 
 	const channelCategorySettings = useSelector(selectAllchannelCategorySetting);
+	const channelsEntities = useAppSelector((state) => selectChannelsEntitiesByClanId(state, currentClanId || ''));
+	const categoriesEntities = useAppSelector((state) => selectCategoryEntityStateByClanId(state, currentClanId || '')?.entities ?? {});
+	const channelNotificationMuteSeconds = useAppSelector(selectOverrideChannelNotificationMuteSeconds);
+	const categoryNotificationSettings = useAppSelector(
+		(state) => (currentClanId ? state.defaultnotificationcategory.byClans[currentClanId]?.categoriesSettings : undefined) ?? {}
+	);
+	const isMutedFromMuteTime = (muteTime?: number | null) => {
+		if (muteTime === undefined || muteTime === null || muteTime === EMuteState.UN_MUTE) {
+			return false;
+		}
+		if (muteTime === EMuteState.MUTED_INFINITY) {
+			return true;
+		}
+		return muteTime > Date.now();
+	};
+	const getIsMuted = useCallback(
+		(setting: (typeof channelCategorySettings)[number]) => {
+			const muteTime =
+				setting.channel_category_title === 'category'
+					? categoryNotificationSettings[setting.id]?.time_mute
+					: channelNotificationMuteSeconds[setting.id];
+
+			if (muteTime !== undefined && muteTime !== null && muteTime !== EMuteState.UN_MUTE) {
+				return isMutedFromMuteTime(muteTime);
+			}
+
+			return (setting.action ?? 1) === 0;
+		},
+		[categoryNotificationSettings, channelNotificationMuteSeconds]
+	);
+	const getChannelCategoryLabel = useCallback(
+		(setting: (typeof channelCategorySettings)[number]) =>
+			setting.channel_category_label || channelsEntities[setting.id]?.channel_label || categoriesEntities[setting.id]?.category_name || '',
+		[channelsEntities, categoriesEntities]
+	);
 	const dispatch = useAppDispatch();
 	const sortedChannelCategorySettings = React.useMemo(() => {
 		const settingsCopy = [...channelCategorySettings];
 		settingsCopy.sort((a, b) => {
-			if (a.channel_category_label && b.channel_category_label) {
-				if (a.channel_category_label < b.channel_category_label) {
+			const labelA = getChannelCategoryLabel(a);
+			const labelB = getChannelCategoryLabel(b);
+			if (labelA && labelB) {
+				if (labelA < labelB) {
 					return -1;
 				}
-				if (a.channel_category_label > b.channel_category_label) {
+				if (labelA > labelB) {
 					return 1;
 				}
 			}
 			return 0;
 		});
 		return settingsCopy;
-	}, [channelCategorySettings]);
+	}, [channelCategorySettings, getChannelCategoryLabel]);
 	const handleNotificationClanChange = (event: any, notification: number) => {
 		dispatch(defaultNotificationActions.setDefaultNotificationClan({ clan_id: currentClanId as string, notification_type: notification }));
 	};
@@ -120,7 +161,11 @@ const ModalNotificationSetting = (props: ModalParam) => {
 
 	const [selectedOption, setSelectedOption] = useState(null);
 	const handleChange = (newValue: any) => {
-		setSelectedOption(newValue);
+		if (!newValue) {
+			setSelectedOption(null);
+			return;
+		}
+
 		if (newValue?.title === 'category') {
 			dispatch(
 				defaultNotificationCategoryActions.setDefaultNotificationCategory({
@@ -155,13 +200,17 @@ const ModalNotificationSetting = (props: ModalParam) => {
 				);
 			}
 		}
+
+		setSelectedOption(null);
 	};
 
 	const handleMuteChange = (channelCategoryId: string, title: string, active: number) => {
+		const muteTime = active === 1 ? EMuteState.UN_MUTE : EMuteState.MUTED_INFINITY;
+
 		if (title === 'category') {
 			const payload: MuteCatePayload = {
 				id: channelCategoryId || '',
-				mute_time: 0,
+				mute_time: muteTime,
 				active,
 				clan_id: currentClanId || ''
 			};
@@ -170,7 +219,7 @@ const ModalNotificationSetting = (props: ModalParam) => {
 		if (title === 'channel') {
 			const payload: MuteChannelPayload = {
 				channel_id: channelCategoryId || '',
-				mute_time: 0,
+				mute_time: muteTime,
 				clan_id: currentClanId || ''
 			};
 			dispatch(notificationSettingActions.setMuteChannel(payload));
@@ -198,28 +247,11 @@ const ModalNotificationSetting = (props: ModalParam) => {
 		}
 	};
 
-	const handleRemoveOverride = (title: string, id: string, active: number, channelCategoryId: string) => {
+	const handleRemoveOverride = (title: string, id: string) => {
 		if (title === 'category') {
-			if (active === 0) {
-				const payload: MuteCatePayload = {
-					id,
-					mute_time: 0,
-					active: 1,
-					clan_id: currentClanId || ''
-				};
-				dispatch(defaultNotificationCategoryActions.setMuteCategory(payload));
-			}
 			dispatch(defaultNotificationCategoryActions.deleteDefaultNotificationCategory({ category_id: id, clan_id: currentClanId as string }));
 		}
 		if (title === 'channel') {
-			if (active === 0) {
-				const body = {
-					channel_id: channelCategoryId || '',
-					clan_id: currentClanId || '',
-					active: 1
-				};
-				dispatch(notificationSettingActions.setNotificationSetting(body));
-			}
 			dispatch(notificationSettingActions.deleteNotiChannelSetting({ channel_id: id, clan_id: currentClanId || '' }));
 		}
 	};
@@ -275,12 +307,15 @@ const ModalNotificationSetting = (props: ModalParam) => {
 					<div className="text-[10px] md:text-xs font-bold  uppercase mb-2 text-theme-primary-active">{t('notificationOverrides')}</div>
 					<div className="text-xs md:text-sm font-normal  mb-2">{t('addChannelOverride')}</div>
 					<div className="bg-theme-setting-primary">
-						<Creatable
+						<Select
 							isClearable
+							isSearchable
 							onChange={handleChange}
 							options={options}
 							value={selectedOption}
-							placeholder={t('selectOrCreateOption')}
+							placeholder={t('selectChannelOrCategory')}
+							getOptionLabel={(option) => option?.label ?? ''}
+							getOptionValue={(option) => option?.id ?? ''}
 							styles={customStyles}
 							classNames={{
 								menuList: () => 'thread-scroll'
@@ -311,8 +346,11 @@ const ModalNotificationSetting = (props: ModalParam) => {
 							</thead>
 							<tbody>
 								{sortedChannelCategorySettings.map((channelCategorySetting) => (
-									<tr key={channelCategorySetting.id} className="group relative grid grid-cols-7 mb-2.5  rounded p-[10px]">
-										<td className="col-span-3 text-xs md:text-sm">{channelCategorySetting.channel_category_label}</td>
+									<tr
+										key={channelCategorySetting.id}
+										className="group relative grid grid-cols-7 items-center mb-2.5 rounded p-[10px]"
+									>
+										<td className="col-span-3 text-xs md:text-sm">{getChannelCategoryLabel(channelCategorySetting)}</td>
 										{notificationTypesListTranslated.map((notificationType) => (
 											<td key={notificationType.value} className="col-span-1 text-center">
 												<input
@@ -330,31 +368,31 @@ const ModalNotificationSetting = (props: ModalParam) => {
 												/>
 											</td>
 										))}
-										<td className="col-span-1 text-center">
+										<td className="col-span-1 relative flex items-center justify-center">
 											<input
 												type="checkbox"
-												checked={channelCategorySetting.action !== 1}
+												checked={getIsMuted(channelCategorySetting)}
 												className="cursor-pointer"
 												onChange={() =>
 													handleMuteChange(
 														channelCategorySetting.id,
 														channelCategorySetting.channel_category_title || '',
-														channelCategorySetting.action === 1 ? 0 : 1
+														getIsMuted(channelCategorySetting) ? 1 : 0
 													)
 												}
 											/>
 											<button
-												className="absolute top-0 right-0 text-red-500 rounded-full  size-[15px] justify-center items-center hidden group-hover:flex px-3 py-3"
+												type="button"
+												aria-label="Remove override"
+												className="absolute right-0 top-1/2 z-10 hidden h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full bg-red-500/15 text-red-500 hover:bg-red-500/25 group-hover:flex"
 												onClick={() =>
 													handleRemoveOverride(
 														channelCategorySetting.channel_category_title || '',
-														channelCategorySetting.id || '',
-														channelCategorySetting.action === 1 ? 1 : 0,
-														channelCategorySetting.id
+														channelCategorySetting.id || ''
 													)
 												}
 											>
-												x
+												<Icons.Close className="h-2.5 w-2.5" defaultFill1="currentColor" />
 											</button>
 										</td>
 									</tr>
