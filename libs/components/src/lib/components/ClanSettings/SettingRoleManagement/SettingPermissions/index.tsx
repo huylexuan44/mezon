@@ -117,7 +117,7 @@ const SettingPermissions = ({
 					{searchResults.map((permission) => (
 						<li
 							key={permission.id}
-							className={`flex items-start justify-between p-3 rounded-lg border border-color-theme ${hasPermissionEdit && permission.level !== undefined && permission.level < userMaxPermissionLevel ? 'cursor-pointer bg-item-hover' : 'cursor-not-allowed bg-item-hover'}`}
+							className={`flex items-start justify-between p-3 rounded-lg border border-color-theme ${(hasPermissionEdit && permission.level !== undefined && permission.level < userMaxPermissionLevel) || isClanOwner ? 'cursor-pointer bg-item-hover' : 'cursor-not-allowed bg-item-hover'}`}
 							data-e2e={generateE2eId('clan_page.settings.role.container.role_option.permissions.item')}
 						>
 							<div className="flex-1 pr-4">
@@ -139,8 +139,11 @@ const SettingPermissions = ({
 									checked={selectedPermissions.includes(permission.id)}
 									onChange={() => {
 										if (
-											hasPermissionEdit &&
-											!(activeRole?.slug?.startsWith('everyone-') && permission.slug === EOverriddenPermission.sendMessage)
+											(hasPermissionEdit &&
+												!(
+													activeRole?.slug?.startsWith('everyone-') && permission.slug === EOverriddenPermission.sendMessage
+												)) ||
+											isClanOwner
 										) {
 											handlePermissionToggle(permission.id);
 										}
@@ -155,7 +158,7 @@ const SettingPermissions = ({
 									disabled={
 										hiddenPermissionAdmin(permission.slug || '') ||
 										!hasPermissionEdit ||
-										(permission.level !== undefined && permission.level >= userMaxPermissionLevel) ||
+										(permission.level !== undefined && permission.level >= userMaxPermissionLevel && !isClanOwner) ||
 										(activeRole?.slug?.startsWith('everyone-') && permission.slug === EOverriddenPermission.sendMessage)
 									}
 									data-e2e={generateE2eId('clan_page.settings.role.container.role_option.permissions.item.switch')}
