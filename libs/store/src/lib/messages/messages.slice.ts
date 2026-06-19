@@ -21,13 +21,13 @@ import {
 	getMobileUploadedAttachments,
 	getPublicKeys,
 	getWebUploadedAttachments,
-	mergePresignFinishContent,
-	withCreateTimeSecondsInUpdateContent,
 	isFacebookLink,
 	isTikTokLink,
 	isYouTubeLink,
+	mergePresignFinishContent,
 	revokePreSendAttachmentUrls,
-	toPublicMessageAttachments
+	toPublicMessageAttachments,
+	withCreateTimeSecondsInUpdateContent
 } from '@mezon/utils';
 import type { EntityState, GetThunkAPI, PayloadAction, Update } from '@reduxjs/toolkit';
 import { createAsyncThunk, createEntityAdapter, createSelector, createSelectorCreator, createSlice, weakMapMemoize } from '@reduxjs/toolkit';
@@ -828,6 +828,9 @@ async function executeUpdateLastSeenMessageBody(args: UpdateMessageArgs, thunkAP
 		}
 	} catch (e) {
 		console.error(e, 'updateLastSeenMessage writeSocket');
+		if ((e as { error?: { message?: string } })?.error?.message === 'permission denied') {
+			return;
+		}
 		thunkAPI.dispatch(messagesActions.queueLastSeenMessage({ clanId, channelId, messageId, mode, badge_count: badgeCount, message_time }));
 	}
 }
