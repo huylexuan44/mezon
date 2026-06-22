@@ -1541,8 +1541,9 @@ export const addNewMessage = createAsyncThunk('messages/addNewMessage', async (m
 
 	const state = thunkAPI.getState() as RootState;
 	const channelId = message.channel_id;
+	const channelData = state.messages.channelMessages?.[channelId];
 
-	if (!state.messages.channelMessages?.[channelId]?.cache) {
+	if (!channelData?.cache && !channelData?.ids?.length) {
 		thunkAPI.dispatch(messagesActions.setLastMessage(message));
 		return;
 	}

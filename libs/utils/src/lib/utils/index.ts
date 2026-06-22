@@ -1,5 +1,4 @@
 import { CustomFile, handleUploadFile, handleUploadFileMobile } from '@mezon/transport';
-import { getPreSendSourceFile, getPreSendThumbnailBlob, revokePreSendAttachmentUrls } from './file';
 import {
 	differenceInDays,
 	differenceInHours,
@@ -60,6 +59,8 @@ import type {
 } from '../types';
 import { EBacktickType, EMimeTypes, ETokenMessage, EUserStatus } from '../types';
 import { getDateLocale } from './dateI18n';
+import { getLinkType } from './embed-social';
+import { getPreSendSourceFile, getPreSendThumbnailBlob } from './file';
 import { Foreman } from './foreman';
 import { isMezonCdnUrl, isTenorUrl } from './urlSanitization';
 import { getPlatform } from './windowEnvironment';
@@ -80,11 +81,11 @@ export * from './forceReflow';
 export * from './heavyAnimation';
 export * from './mediaDimensions';
 export * from './mergeRefs';
-export * from './sanitizeHtml';
 export * from './parseHtmlAsFormattedText';
 export * from './presignFinish';
 export * from './processEntitiesDirectly';
 export * from './resetScroll';
+export * from './sanitizeHtml';
 export * from './schedulers';
 export * from './select';
 export * from './signals';
@@ -624,6 +625,63 @@ export function addMention(obj: IMessageSendPayload | string, mentionValue: IMen
 	}
 
 	return updatedObj;
+}
+
+export const NOTIFICATION_MARKER_REGEX = /\[(?:lk|pre|b|c|s|t|vk|lk_yt|lk_fb|lk_tt|lk_ogp)\]\s?/g;
+
+function getNotificationMarkerShiftBeforeIndex(content: string, index: number): number {
+	let shift = 0;
+	const regex = new RegExp(NOTIFICATION_MARKER_REGEX.source, 'g');
+
+	for (const match of content.matchAll(regex)) {
+		if (match.index !== undefined && match.index < index) {
+			shift += match[0].length;
+		} else {
+			break;
+		}
+	}
+
+	return shift;
+}
+
+export function stripNotificationMarkers(content: string): string {
+	return content.replace(NOTIFICATION_MARKER_REGEX, '');
+}
+
+export function adjustMentionsForStrippedMarkers(contentWithMarkers: string, mentions: IMentionOnMessage[]): IMentionOnMessage[] {
+	return mentions.map((mention) => {
+		if (mention.s === undefined || mention.e === undefined) {
+			return mention;
+		}
+
+		return {
+			...mention,
+			s: mention.s - getNotificationMarkerShiftBeforeIndex(contentWithMarkers, mention.s),
+			e: mention.e - getNotificationMarkerShiftBeforeIndex(contentWithMarkers, mention.e)
+		};
+	});
+}
+
+export function patchLinkTokens(content: IExtendedMessage): IExtendedMessage;
+export function patchLinkTokens(content: IExtendedMessage | undefined): IExtendedMessage | undefined;
+export function patchLinkTokens(content: IExtendedMessage | undefined): IExtendedMessage | undefined {
+	if (!content) {
+		return content;
+	}
+
+	if ((!content.mk || content.mk.length === 0) && Array.isArray(content.lk) && content.lk.length > 0) {
+		const text = typeof content.t === 'string' ? content.t : '';
+
+		return {
+			...content,
+			mk: content.lk.map((lkItem) => {
+				const url = lkItem.s !== undefined && lkItem.e !== undefined ? text.substring(lkItem.s, lkItem.e) : '';
+				return { ...lkItem, type: getLinkType(url) };
+			})
+		};
+	}
+
+	return content;
 }
 
 export function isValidEmojiData(data: IExtendedMessage): boolean | undefined {
