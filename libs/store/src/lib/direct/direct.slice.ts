@@ -1,6 +1,6 @@
 import { captureSentryError } from '@mezon/logger';
 import type { BuzzArgs, IChannel, IMessage, IUserChannel, IUserProfileActivity, LoadingStatus } from '@mezon/utils';
-import { ActiveDm } from '@mezon/utils';
+import { ActiveDm, TypeMessage } from '@mezon/utils';
 import type { EntityState, PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk, createEntityAdapter, createSelector, createSlice } from '@reduxjs/toolkit';
 import type {
@@ -27,6 +27,22 @@ import { messagesActions } from '../messages/messages.slice';
 import type { RootState } from '../store';
 
 export const DIRECT_FEATURE_KEY = 'direct';
+
+const normalizeStringOrArray = (value?: string | string[]): string[] => {
+	if (!value) return [];
+	return Array.isArray(value) ? value : [value];
+};
+
+const buildClientDmLabel = (apiLabel?: string, display_names?: string | string[], username?: string | string[]): string => {
+	if (apiLabel?.trim()) return apiLabel;
+	const names = normalizeStringOrArray(display_names);
+	if (names.length) return names.join(',');
+	const users = normalizeStringOrArray(username);
+	if (users.length) return users.join(',');
+	return '';
+};
+
+const isDmProfileUnsafeMessage = (code?: number) => code === TypeMessage.ShareContact || code === TypeMessage.SendToken;
 
 export interface DirectEntity extends IChannel {
 	id: string;
@@ -109,24 +125,21 @@ export const createNewDirectMessage = createAsyncThunk(
 			const mezon = await ensureSession(getMezonCtx(thunkAPI));
 			const response = await mezon.client.createChannelDesc(mezon.session, body);
 			if (response) {
-				thunkAPI.dispatch(
-					directActions.upsertOne({
-						id: response.channel_id || '0',
-						...response,
-						usernames: Array.isArray(username) ? username : username ? [username] : [],
-						display_names: Array.isArray(display_names) ? display_names : display_names ? [display_names] : [],
-						channel_label:
-							response.channel_label ||
-							(Array.isArray(display_names) ? display_names.join(',') : Array.isArray(username) ? username.join(',') : ''),
-						channel_avatar: response.channel_avatar || '/assets/images/avatar-group.png',
-						avatars: Array.isArray(avatar) ? avatar : avatar ? [avatar] : [],
-						user_ids: body.user_ids,
-						active: 1,
-						last_sent_message: {
-							timestamp_seconds: Math.floor(Date.now() / 1000)
-						}
-					})
-				);
+				const entity: DirectEntity = {
+					id: response.channel_id || '0',
+					...response,
+					usernames: normalizeStringOrArray(username),
+					display_names: normalizeStringOrArray(display_names),
+					channel_label: buildClientDmLabel(response.channel_label, display_names, username),
+					channel_avatar: response.channel_avatar || '/assets/images/avatar-group.png',
+					avatars: normalizeStringOrArray(avatar),
+					user_ids: body.user_ids,
+					active: 1,
+					last_sent_message: {
+						timestamp_seconds: Math.floor(Date.now() / 1000)
+					}
+				};
+				thunkAPI.dispatch(directActions.upsertOne(entity));
 
 				await thunkAPI.dispatch(
 					channelsActions.joinChat({
@@ -475,12 +488,29 @@ export const addDirectByMessageWS = createAsyncThunk('direct/addDirectByMessageW
 		const existingDirect = selectDirectById(state, message.channel_id);
 
 		const directEntity = mapMessageToConversation(message);
+		const isUnsafeProfileMessage = isDmProfileUnsafeMessage(message.code);
+
+		if (isUnsafeProfileMessage) {
+			if (existingDirect) {
+				thunkAPI.dispatch(
+					directActions.updateMoreData({
+						id: message.channel_id,
+						channel_id: message.channel_id,
+						last_sent_message: directEntity.last_sent_message,
+						update_time_seconds: directEntity.update_time_seconds,
+						active: 1
+					} as DirectEntity)
+				);
+			}
+			return null;
+		}
+
 		if (!existingDirect) {
 			thunkAPI.dispatch(directActions.upsertOne({ ...directEntity, active: 1 }));
 			return directEntity;
-		} else {
-			thunkAPI.dispatch(directActions.updateMoreData({ ...directEntity, active: 1 }));
 		}
+
+		thunkAPI.dispatch(directActions.updateMoreData({ ...directEntity, active: 1 }));
 
 		return null;
 	} catch (error) {
@@ -604,7 +634,7 @@ export const directSlice = createSlice({
 			const existingShowPinBadge = existingEntity?.showPinBadge;
 			const dataUpdate = action.payload;
 
-			if (dataUpdate.channel_label === undefined && existingEntity?.channel_label?.trim()) {
+			if (!dataUpdate.channel_label?.trim() && existingEntity?.channel_label?.trim()) {
 				dataUpdate.channel_label = existingEntity.channel_label;
 			}
 			if (dataUpdate.avatars === undefined && existingEntity?.avatars?.length) {
