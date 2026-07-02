@@ -10,7 +10,7 @@
 	"removeNotification": "Usuń powiadomienie",
 	"nothingHere": "Nic tu nie ma",
 	"comeBackNotify": "Wróć, aby otrzymywać powiadomienia o wydarzeniach i więcej",
-	"repliedTo": "Odpowiedz: ",
+	"repliedTo": "Oryginalna wiadomość: ",
 	"sender": "Nadawca: ",
 	"seeWhenAnswersAppear": "Zobacz, kiedy pojawią się odpowiedzi",
 	"enablePushNotifications": "Włącz powiadomienia push",
@@ -40,6 +40,6 @@
 		"ok": "OK"
 	},
 	"andYou": "i Ty",
-	"topicAndYou": "Dyskusja tematyczna i Ty",
+	"topicAndYou": "DYSKUSJA NA TEMAT",
 	"unknowClan": "Nie jesteś już członkiem tej konwersacji"
 }

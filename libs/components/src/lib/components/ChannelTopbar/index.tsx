@@ -769,8 +769,8 @@ const DmTopbarTools = memo(() => {
 	}, [currentDmGroup?.type, currentDmGroup?.user_ids, userCurrent?.user?.id]);
 
 	return (
-		<div className=" items-center h-full ml-auto hidden justify-end ssm:flex">
-			<div className=" items-center gap-2 flex">
+		<div className="items-center h-full ml-auto flex justify-end max-sbm:mr-5">
+			<div className="items-center gap-2 flex">
 				<div className="justify-start items-center gap-[15px] flex ">
 					{canShowCallButtons && !isBlockUser && !isMe && (
 						<>
@@ -825,20 +825,6 @@ const DmTopbarTools = memo(() => {
 					)}
 				</div>
 			</div>
-			{currentDmGroup?.type === ChannelType.CHANNEL_TYPE_GROUP && (
-				<button title={t('tooltips.showMemberList')} onClick={() => setIsShowMemberListDM(!isShowMemberListDM)} className="sbm:hidden">
-					<span>
-						<Icons.MemberList className="w-5 h-5" />
-					</span>
-				</button>
-			)}
-			{currentDmGroup?.type === ChannelType.CHANNEL_TYPE_DM && (
-				<button title={t('tooltips.showUserProfile')} onClick={() => setIsUseProfileDM(!isUseProfileDM)} className="sbm:hidden">
-					<span>
-						<Icons.IconUserProfileDM className="w-5 h-5" />
-					</span>
-				</button>
-			)}
 		</div>
 	);
 });

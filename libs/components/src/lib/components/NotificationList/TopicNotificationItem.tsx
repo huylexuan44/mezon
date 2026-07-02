@@ -19,7 +19,7 @@ import type { IMessageWithUser } from '@mezon/utils';
 import { createImgproxyUrl, generateE2eId } from '@mezon/utils';
 import type { ApiChannelMessageHeader, ApiSdTopic } from 'mezon-js';
 import { safeJSONParse } from 'mezon-js';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -174,11 +174,11 @@ function AllTabContent({ messageReplied, subject, topic }: ITopicTabContent) {
 						src={isAnonymous ? '' : priorityAvatar ? priorityAvatar : lastSentUser?.user?.avatar_url}
 					/>
 				</div>
-				<div className="h-full flex-1 max-w-full min-w-0 pt-1">
+				<div className="h-full flex-1 max-w-full min-w-0 gap-1">
 					<div>
 						<div className="text-[12px] font-bold uppercase">{subject}</div>
 					</div>
-					<div>
+					<div className="pt-1">
 						<div
 							className="text-[12px] w-full max-w-full break-words whitespace-normal"
 							style={{ display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
