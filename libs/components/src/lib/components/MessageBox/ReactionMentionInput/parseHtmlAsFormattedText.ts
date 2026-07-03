@@ -373,7 +373,12 @@ function parseMarkdownLinks(html: string) {
 
 	result = result.replace(/```[\s\S]*?```/g, (match) => {
 		const index = codeSections.length;
-		codeSections.push(match);
+
+		const div = document.createElement('div');
+		div.innerHTML = match;
+
+		const text = div.textContent?.trim();
+		codeSections.push(text);
 		return `__CODE_BLOCK_${index}__`;
 	});
 
@@ -381,9 +386,12 @@ function parseMarkdownLinks(html: string) {
 		if (match.includes('__CODE_BLOCK_')) {
 			return match;
 		}
+		const div = document.createElement('div');
+		div.innerHTML = match;
 
+		const text = div.textContent?.trim();
 		const index = codeSections.length;
-		codeSections.push(match);
+		codeSections.push(text);
 		return `__INLINE_CODE_${index}__`;
 	});
 
