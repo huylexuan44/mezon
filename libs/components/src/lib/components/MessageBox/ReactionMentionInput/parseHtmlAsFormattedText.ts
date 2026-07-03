@@ -378,7 +378,9 @@ function parseMarkdownLinks(html: string) {
 		div.innerHTML = match;
 
 		const text = div.textContent?.trim();
-		codeSections.push(text);
+		if (text) {
+			codeSections.push(text);
+		}
 		return `__CODE_BLOCK_${index}__`;
 	});
 
@@ -391,7 +393,9 @@ function parseMarkdownLinks(html: string) {
 
 		const text = div.textContent?.trim();
 		const index = codeSections.length;
-		codeSections.push(text);
+		if (text) {
+			codeSections.push(text);
+		}
 		return `__INLINE_CODE_${index}__`;
 	});
 
