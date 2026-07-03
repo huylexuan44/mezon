@@ -246,6 +246,12 @@ export const handleSendTopic = createAsyncThunk('topics/sendTopicMessage', async
 			mk
 		};
 	}
+	if (mentions?.length) {
+		topicContent = {
+			...topicContent,
+			tp: topicId
+		};
+	}
 
 	await client.writeChatMessage(
 		mezon.session,
