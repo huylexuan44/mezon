@@ -1,4 +1,5 @@
 export * from './lib/async';
+export * from './lib/bridge';
 export * from './lib/channel-app-launch';
 export * from './lib/clan';
 export * from './lib/constant';
