@@ -9,10 +9,7 @@ import {
 	MINIMIZE_WINDOW,
 	TITLE_BAR_ACTION,
 	UNMAXIMIZE_WINDOW,
-	isElectron,
-	isLinuxDesktop,
-	isMacDesktop,
-	isWindowsDesktop
+	isElectron
 } from '@mezon/utils';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
@@ -20,14 +17,19 @@ import { Outlet, useLoaderData, useLocation } from 'react-router-dom';
 import { useNotificationDisconnect } from '../hooks/useNotificationManagement';
 import type { IAppLoaderData } from '../loaders/appLoader';
 import { MacOSWindowControls } from './MacWindowsControl';
+import { shouldShowMacWindowControls, shouldShowWinLinuxTitleBar } from './desktopWindowChrome';
 
 type TitleBarProps = {
 	eventName: string;
 };
 
 const TitleBar: React.FC<TitleBarProps> = ({ eventName }) => {
+	const sendWindowAction = (action: string) => {
+		window.electron?.send?.(eventName, action);
+	};
+
 	const handleMinimize = () => {
-		window.electron.send(eventName, MINIMIZE_WINDOW);
+		sendWindowAction(MINIMIZE_WINDOW);
 	};
 
 	useEffect(() => {
@@ -36,21 +38,21 @@ const TitleBar: React.FC<TitleBarProps> = ({ eventName }) => {
 
 	const handleMaximize = () => {
 		window.dispatchEvent(new Event('resize'));
-		window.electron.send(eventName, MAXIMIZE_WINDOW);
+		sendWindowAction(MAXIMIZE_WINDOW);
 	};
 
 	const handleClose = () => {
-		window.electron.send(eventName, CLOSE_APP);
+		sendWindowAction(CLOSE_APP);
 	};
 
 	const handleDoubleClick = () => {
-		window.electron.send(eventName, UNMAXIMIZE_WINDOW);
+		sendWindowAction(UNMAXIMIZE_WINDOW);
 	};
 
 	return (
 		<header id="titlebar" className="bg-theme-primary" onDoubleClick={handleDoubleClick}>
 			<div id="drag-region">
-				<div className="text-theme-primary-active ml-3 text-[15.15px] leading-[26.58px] font-semibold ">Mezon</div>
+				<div className="text-theme-primary-active ml-3 truncate text-[13px] font-semibold leading-[21px]">Mezon</div>
 				<div id="window-controls">
 					<div
 						className="button window-hover cursor-pointer dark:hover:bg-bgModifierHover hover:bg-bgLightModeButton"
@@ -128,11 +130,11 @@ const ViewModeHandler: React.FC = () => {
 		return () => document.removeEventListener('keydown', handleKeyDown);
 	}, [viewMode]);
 
-	if (isWindowsDesktop || isLinuxDesktop) {
+	if (shouldShowWinLinuxTitleBar()) {
 		return <TitleBar eventName={viewMode === 'image' ? IMAGE_WINDOW_TITLE_BAR_ACTION : TITLE_BAR_ACTION} />;
 	}
 
-	if (isMacDesktop) {
+	if (shouldShowMacWindowControls()) {
 		return <MacOSWindowControls />;
 	}
 

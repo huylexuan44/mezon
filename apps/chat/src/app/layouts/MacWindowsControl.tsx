@@ -18,12 +18,13 @@ interface MacOSWindowControlsProps {
 	className?: string;
 }
 
+const TRAFFIC_ICON_CLASS = 'w-2 h-2 text-black';
+
 export const MacOSWindowControls: React.FC<MacOSWindowControlsProps> = ({ className }) => {
 	const dispatch = useAppDispatch();
 	const isMaximized = useAppSelector(selectIsMaximized);
 	const isWindowFocused = useAppSelector(selectIsWindowFocused);
 
-	// Listen for window focus/blur events
 	useEffect(() => {
 		const handleFocus = () => dispatch(windowControlsActions.setIsWindowFocused(true));
 		const handleBlur = () => dispatch(windowControlsActions.setIsWindowFocused(false));
@@ -54,19 +55,19 @@ export const MacOSWindowControls: React.FC<MacOSWindowControlsProps> = ({ classN
 		dispatch(listenToWindowStateChanges());
 	}, [dispatch]);
 
-	const buttonBaseClass =
-		'w-3 h-3 rounded-full cursor-default border-none flex items-center justify-center transition-all duration-200 ease-in-out group';
-
 	const MacOSButton: React.FC<{
 		onClick: () => void;
-		buttonType?: string;
 		backgroundColor: string;
-		title?: string;
 		icon: React.ReactNode;
-	}> = ({ onClick, backgroundColor, title, icon }) => (
-		<button onClick={onClick} className={buttonBaseClass} title={title} style={{ backgroundColor }}>
+	}> = ({ onClick, backgroundColor, icon }) => (
+		<button
+			type="button"
+			onClick={onClick}
+			className="group flex h-3 w-3 cursor-pointer items-center justify-center overflow-hidden rounded-full border-none p-0 transition-opacity duration-200 ease-in-out"
+			style={{ backgroundColor, ...WEBKIT_NO_DRAG }}
+		>
 			<span
-				className={`opacity-0 ${isWindowFocused ? 'group-hover:opacity-100' : ''} transition-opacity duration-200 flex items-center justify-center w-full h-full overflow-hidden`}
+				className={`flex h-full w-full items-center justify-center opacity-0 transition-opacity duration-200 ${isWindowFocused ? 'group-hover:opacity-100' : ''}`}
 			>
 				{icon}
 			</span>
@@ -75,12 +76,16 @@ export const MacOSWindowControls: React.FC<MacOSWindowControlsProps> = ({ classN
 
 	return (
 		<div
-			className={`fixed top-0 left-0 flex items-center gap-2 z-[9999] rounded-sm pl-3 px-2 py-3 backdrop-blur-sm ${className}`}
+			className={`pointer-events-auto fixed left-0 top-0 z-[9999] flex items-center gap-2 pl-3 pr-2 py-3 ${className ?? ''}`}
 			style={WEBKIT_NO_DRAG}
 		>
-			<MacOSButton onClick={handleClose} backgroundColor="#ff5f57" icon={<Icons.MacOSCloseIcon />} />
-			<MacOSButton onClick={handleMinimize} backgroundColor="#ffbd2e" icon={<Icons.MacOSMinimizeIcon />} />
-			<MacOSButton onClick={handleMaximize} backgroundColor="#28ca42" icon={<Icons.MacOSMaximizeIcon isMaximized={isMaximized} />} />
+			<MacOSButton onClick={handleClose} backgroundColor="#ff5f57" icon={<Icons.MacOSCloseIcon className={TRAFFIC_ICON_CLASS} />} />
+			<MacOSButton onClick={handleMinimize} backgroundColor="#ffbd2e" icon={<Icons.MacOSMinimizeIcon className={TRAFFIC_ICON_CLASS} />} />
+			<MacOSButton
+				onClick={handleMaximize}
+				backgroundColor="#28ca42"
+				icon={<Icons.MacOSMaximizeIcon isMaximized={isMaximized} className={TRAFFIC_ICON_CLASS} />}
+			/>
 		</div>
 	);
 };

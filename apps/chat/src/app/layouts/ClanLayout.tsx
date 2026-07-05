@@ -27,6 +27,7 @@ import { ChannelType } from 'mezon-js';
 import { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { Outlet, useLocation } from 'react-router-dom';
+import { getChannelListColumnHeightClass } from './desktopWindowChrome';
 import ChatStream from '../pages/chatStream';
 import Setting from '../pages/setting';
 import ThreadsMain from '../pages/thread';
@@ -125,10 +126,12 @@ const ClanLayout = () => {
 		}
 	}, [isShowCreateTopic, currentTopicId, dispatch]);
 
+	const channelListColumnHeightClass = getChannelListColumnHeightClass();
+
 	return (
 		<>
 			<div
-				className={`select-none h-dvh flex-col flex max-w-[272px] bg-theme-direct-message  relative overflow-hidden min-w-widthMenuMobile sbm:min-w-[272px] ${closeMenu ? (statusMenu ? 'flex' : 'hidden') : ''}`}
+				className={`select-none h-dvh flex-col flex max-w-[272px] bg-theme-direct-message  relative overflow-hidden min-w-widthMenuMobile sbm:min-w-[272px] ${channelListColumnHeightClass} ${closeMenu ? (statusMenu ? 'flex' : 'hidden') : ''}`}
 			>
 				<ClanHeader name={currentClanName} type="CHANNEL" bannerImage={currentClanBanner} />
 				<ChannelList />

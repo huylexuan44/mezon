@@ -27,6 +27,7 @@ import { memo, useContext, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Outlet } from 'react-router-dom';
 import ChannelVoice from '../pages/channel/ChannelVoice';
+import { getMainLayoutClassName } from './desktopWindowChrome';
 
 const GlobalEventListener = () => {
 	const { handleReconnect } = useContext(ChatContext);
@@ -152,10 +153,12 @@ const MainLayout = memo(
 		};
 		const shouldRender = useIdleRender();
 
+		const mainLayoutClassName = getMainLayoutClassName();
+
 		return (
 			<div
 				id="main-layout"
-				className={`w-full bg-theme-primary`}
+				className={mainLayoutClassName}
 				onClick={handleClickingOutside}
 				onContextMenu={(event: React.MouseEvent) => {
 					event.preventDefault();

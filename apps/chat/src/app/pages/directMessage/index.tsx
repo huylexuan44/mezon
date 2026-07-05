@@ -2,6 +2,7 @@ import { ClanHeader, DirectMessageContextMenuProvider, DirectMessageList } from 
 import { clansActions, selectCloseMenu, selectStatusMenu } from '@mezon/store';
 import { memo, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { getChannelListColumnHeightClass } from '../../layouts/desktopWindowChrome';
 import Setting from '../setting';
 import { MainContentDirect } from './MainContentDirect';
 
@@ -18,10 +19,12 @@ const Direct = () => {
 		}
 	}, []);
 
+	const channelListColumnHeightClass = getChannelListColumnHeightClass();
+
 	return (
 		<>
 			<div
-				className={`flex-col flex w-[272px]  bg-theme-direct-message  relative min-w-widthMenuMobile h-dvh sbm:min-w-[272px] ${closeMenu ? (statusMenu ? 'flex' : 'max-sm:hidden') : ''}`}
+				className={`flex-col flex w-[272px]  bg-theme-direct-message  relative min-w-widthMenuMobile ${channelListColumnHeightClass} sbm:min-w-[272px] ${closeMenu ? (statusMenu ? 'flex' : 'max-sm:hidden') : ''}`}
 			>
 				<DirectMessageContextMenuProvider contextMenuId="dm-list-context">
 					<div className="contain-content ">
