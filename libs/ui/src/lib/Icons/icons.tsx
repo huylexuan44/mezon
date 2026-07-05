@@ -6908,25 +6908,25 @@ export function MacOSCloseIcon({ defaultSize = 'w-5 h-5 ', defaultFill1 = 'curre
 export function MacOSMinimizeIcon({ defaultSize = 'w-5 h-5 ', defaultFill1 = 'currentColor', ...props }: IconProps) {
 	return (
 		<svg width="100%" height="100%" viewBox="0 0 6 1" {...props}>
-			<rect width="6" height="1" />
+			<rect width="6" height="1" fill="currentColor" />
 		</svg>
 	);
 }
 
 export function MacOSMaximizeIcon({ isMaximized = false, ...props }: React.HTMLAttributes<SVGElement> & { isMaximized?: boolean }) {
+	if (isMaximized) {
+		return (
+			<svg width="100%" height="100%" viewBox="0 0 6 6" {...props}>
+				<path d="M2 2H5V5H2V2Z" stroke="currentColor" strokeWidth="0.8" fill="none" />
+				<path d="M1 1H4V4H1V1Z" stroke="currentColor" strokeWidth="0.8" fill="none" />
+			</svg>
+		);
+	}
+
 	return (
 		<svg width="100%" height="100%" viewBox="0 0 6 6" {...props}>
-			<path
-				d="M1 1L5 5M5 1L1 5"
-				stroke="currentColor"
-				strokeWidth="0.8"
-				fill="none"
-				className="icon-MacOSMaximizeIcon-fill-1 icon-MacOSMaximizeIcon-stroke-1"
-			/>
-			<circle cx="1" cy="1" r="0.5" fill="currentColor" className="icon-MacOSMaximizeIcon-fill-2" />
-			<circle cx="5" cy="1" r="0.5" fill="currentColor" className="icon-MacOSMaximizeIcon-fill-3" />
-			<circle cx="1" cy="5" r="0.5" fill="currentColor" className="icon-MacOSMaximizeIcon-fill-4" />
-			<circle cx="5" cy="5" r="0.5" fill="currentColor" className="icon-MacOSMaximizeIcon-fill-5" />
+			<path d="M0.5 0.5L3 0.5L0.5 3Z" fill="currentColor" />
+			<path d="M5.5 5.5L3 5.5L5.5 3Z" fill="currentColor" />
 		</svg>
 	);
 }
