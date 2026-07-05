@@ -44,35 +44,13 @@ import {
 	usersClanActions
 } from '@mezon/store';
 import { Icons } from '@mezon/ui';
-import {
-	DONE_ONBOARDING_STATUS,
-	EOverriddenPermission,
-	FOR_10_MINUTES_SEC,
-	FOR_1_HOUR_SEC,
-	FOR_24_HOURS_SEC,
-	ONE_MILISECONDS,
-	ONE_MINUTE_MS,
-	SubPanelName,
-	ThreadStatus,
-	buildChannelAppLaunchUrl,
-	generateE2eId,
-	isBackgroundModeActive,
-	isElectron,
-	titleMission,
-	useBackgroundMode
-} from '@mezon/utils';
-
+import { buildChannelAppLaunchUrl, DONE_ONBOARDING_STATUS, EOverriddenPermission, FOR_10_MINUTES_SEC, FOR_1_HOUR_SEC, FOR_24_HOURS_SEC, generateE2eId, isBackgroundModeActive, isElectron, isLinuxDesktop, isWindowsDesktop, ONE_MILISECONDS, ONE_MINUTE_MS, SubPanelName, ThreadStatus, titleMission, useBackgroundMode } from '@mezon/utils';
 import type { ApiOnboardingItem } from 'mezon-js';
 import { ChannelStreamMode, ChannelType, safeJSONParse } from 'mezon-js';
 import type { DragEvent } from 'react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useModal } from 'react-modal-hook';
-import {
-	getChannelStreamOuterPaddingClass,
-	getHeightWithoutTopBarClass,
-	getMessageViewChatDMMaxHeightClass
-} from '../../layouts/desktopWindowChrome';
 import { useDispatch, useSelector } from 'react-redux';
 import { ChannelMedia } from './ChannelMedia';
 import { ChannelMessageBox } from './ChannelMessageBox';
@@ -99,18 +77,17 @@ function useChannelSeen(channelId: string) {
 		if (lastSeenMessageId && lastMessageViewport?.id) {
 			try {
 				const distance = Math.round(Number((BigInt(lastMessageViewport.id) >> BigInt(22)) - (BigInt(lastSeenMessageId) >> BigInt(22))));
-				if (distance > 0) {
+				if (distance >= 0) {
 					markAsReadSeen(lastMessageViewport, mode, currentChannel?.count_mess_unread || 0);
 					return;
 				}
 			} catch (error) {
 				//
 			}
-			return;
 		}
 
 		const isLastMessage = lastMessageViewport.id === lastMessageChannel.id;
-		if (isLastMessage || lastSeenMessageId === undefined) {
+		if (isLastMessage) {
 			markAsReadSeen(lastMessageViewport, mode, currentChannel?.count_mess_unread || 0);
 		}
 	}, [lastMessageViewport, lastMessageChannel, lastSeenMessageId, markAsReadSeen, currentChannel, mode]);
@@ -267,6 +244,10 @@ const ChannelMainContentText = ({ channelId, canSendMessage }: ChannelMainConten
 						clanId: currentChannel?.clan_id ?? '',
 						clanName: launchClanName
 					});
+					if (isElectron()) {
+						window.electron.launchAppWindow(urlWithHash);
+						return;
+					}
 					window.open(urlWithHash, currentChannel?.channel_label, 'width=900,height=700,noopener,noreferrer');
 				}
 			}
@@ -385,24 +366,23 @@ const ChannelMainContent = ({ channelId }: ChannelMainContentProps) => {
 	const isChannelMezonVoice = currentChannel?.type === ChannelType.CHANNEL_TYPE_MEZON_VOICE;
 	const isChannelApp = currentChannel?.type === ChannelType.CHANNEL_TYPE_APP;
 	const isChannelStream = currentChannel?.type === ChannelType.CHANNEL_TYPE_STREAMING;
-	const heightWithoutTopBarClass = getHeightWithoutTopBarClass(closeMenu);
-	const messageViewChatDMMaxHeightClass = getMessageViewChatDMMaxHeightClass();
-	const channelStreamOuterPaddingClass = getChannelStreamOuterPaddingClass(isChannelStream);
 
 	return (
-		<div className={`w-full h-full max-h-full overflow-hidden ${channelStreamOuterPaddingClass}`}>
+		<div className={`w-full h-full max-h-full overflow-hidden ${isChannelStream && (isWindowsDesktop || isLinuxDesktop) ? 'pb-5' : ''}`}>
 			<div
 				className="flex flex-col flex-1 shrink min-w-0 bg-transparent h-full max-h-full overflow-hidden z-10"
 				id="mainChat"
 				// eslint-disable-next-line @typescript-eslint/no-empty-function
 				onDragEnter={canSendMessage ? handleDragEnter : () => {}}
 			>
-				<div className={`flex flex-row ${heightWithoutTopBarClass}`}>
+				<div
+					className={`flex flex-row ${closeMenu ? `${isWindowsDesktop || isLinuxDesktop ? 'h-heightTitleBarWithoutTopBarMobile' : 'h-heightWithoutTopBarMobile'}` : `${isWindowsDesktop || isLinuxDesktop ? 'h-heightTitleBarWithoutTopBar' : 'h-heightWithoutTopBar'}`}`}
+				>
 					{!isShowCanvas &&
 						!isShowAgeRestricted &&
 						(isShowChatInVoice || currentChannel?.type !== ChannelType.CHANNEL_TYPE_MEZON_VOICE) && (
 							<div
-								className={`flex flex-col flex-1 min-w-60 ${messageViewChatDMMaxHeightClass} ${isShowMemberList && !isSpecialView ? 'w-widthMessageViewChat' : isShowCreateThread ? 'w-widthMessageViewChatThread' : isSearchMessage ? 'w-widthSearchMessage' : 'w-widthThumnailAttachment'} h-full max-h-full overflow-hidden ${closeMenu && !statusMenu && isShowMemberList && !isChannelStream && 'hidden'} z-10`}
+								className={`flex flex-col flex-1 min-w-60 ${isWindowsDesktop || isLinuxDesktop ? 'max-h-titleBarMessageViewChatDM' : 'max-h-messageViewChatDM'} ${isShowMemberList && !isSpecialView ? 'w-widthMessageViewChat' : isShowCreateThread ? 'w-widthMessageViewChatThread' : isSearchMessage ? 'w-widthSearchMessage' : 'w-widthThumnailAttachment'} h-full max-h-full overflow-hidden ${closeMenu && !statusMenu && isShowMemberList && !isChannelStream && 'hidden'} z-10`}
 							>
 								<div className={`relative overflow-y-auto flex-1 min-h-0`}>
 									<ChannelMedia currentChannel={currentChannel} />
@@ -413,7 +393,9 @@ const ChannelMainContent = ({ channelId }: ChannelMainContentProps) => {
 							</div>
 						)}
 					{isShowCanvas && !isShowAgeRestricted && !isChannelMezonVoice && !isChannelStream && (
-						<div className={`flex flex-1 justify-center thread-scroll overflow-x-hidden scroll-big ${isElectron() ? 'h-[calc(100%_-_23px)]' : ''}`}>
+						<div
+							className={`flex flex-1 justify-center thread-scroll overflow-x-hidden scroll-big ${isElectron() ? 'h-[calc(100%_-_23px)]' : ''}`}
+						>
 							<Canvas />
 						</div>
 					)}
