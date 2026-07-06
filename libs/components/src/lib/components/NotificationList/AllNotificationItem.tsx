@@ -103,7 +103,7 @@ function AllNotificationItem({ notify, onCloseTooltip }: NotifyMentionProps) {
 	const channelId = message?.channel_id;
 	const clanId = message?.clan_id;
 
-	const topicId = notify?.topic_id || '0';
+	const topicId = notify?.topic_id || notify?.content?.tp || '0';
 
 	const isTopic = !!topicId && topicId !== '0';
 
