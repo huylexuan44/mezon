@@ -44,7 +44,25 @@ import {
 	usersClanActions
 } from '@mezon/store';
 import { Icons } from '@mezon/ui';
-import { buildChannelAppLaunchUrl, DONE_ONBOARDING_STATUS, EOverriddenPermission, FOR_10_MINUTES_SEC, FOR_1_HOUR_SEC, FOR_24_HOURS_SEC, generateE2eId, isBackgroundModeActive, isElectron, isLinuxDesktop, isWindowsDesktop, ONE_MILISECONDS, ONE_MINUTE_MS, SubPanelName, ThreadStatus, titleMission, useBackgroundMode } from '@mezon/utils';
+import {
+	DONE_ONBOARDING_STATUS,
+	EOverriddenPermission,
+	FOR_10_MINUTES_SEC,
+	FOR_1_HOUR_SEC,
+	FOR_24_HOURS_SEC,
+	ONE_MILISECONDS,
+	ONE_MINUTE_MS,
+	SubPanelName,
+	ThreadStatus,
+	buildChannelAppLaunchUrl,
+	generateE2eId,
+	isBackgroundModeActive,
+	isElectron,
+	isLinuxDesktop,
+	isWindowsDesktop,
+	titleMission,
+	useBackgroundMode
+} from '@mezon/utils';
 import type { ApiOnboardingItem } from 'mezon-js';
 import { ChannelStreamMode, ChannelType, safeJSONParse } from 'mezon-js';
 import type { DragEvent } from 'react';
@@ -77,17 +95,18 @@ function useChannelSeen(channelId: string) {
 		if (lastSeenMessageId && lastMessageViewport?.id) {
 			try {
 				const distance = Math.round(Number((BigInt(lastMessageViewport.id) >> BigInt(22)) - (BigInt(lastSeenMessageId) >> BigInt(22))));
-				if (distance >= 0) {
+				if (distance > 0) {
 					markAsReadSeen(lastMessageViewport, mode, currentChannel?.count_mess_unread || 0);
 					return;
 				}
 			} catch (error) {
 				//
 			}
+			return;
 		}
 
 		const isLastMessage = lastMessageViewport.id === lastMessageChannel.id;
-		if (isLastMessage) {
+		if (isLastMessage || lastSeenMessageId === undefined) {
 			markAsReadSeen(lastMessageViewport, mode, currentChannel?.count_mess_unread || 0);
 		}
 	}, [lastMessageViewport, lastMessageChannel, lastSeenMessageId, markAsReadSeen, currentChannel, mode]);
