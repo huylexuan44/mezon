@@ -370,7 +370,6 @@ function parseMarkdownLinks(html: string) {
 
 	const codeSections: string[] = [];
 	let result = html;
-	console.log('result: ', result);
 
 	result = result.replace(/```[\s\S]*?```/g, (match) => {
 		const index = codeSections.length;
