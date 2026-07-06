@@ -459,6 +459,7 @@ export const voiceSlice = createSlice({
 				users.forEach((list) => {
 					const listUser = list.user_ids;
 					const channelId = list.channel_id;
+					const listShare = new Set(list.share_screen_ids);
 
 					if (!listUser || !channelId) return;
 
@@ -469,8 +470,7 @@ export const voiceSlice = createSlice({
 							state.listInVoiceStatus[id] = {
 								clanId,
 								channelId,
-								status:
-									list.share_screen_ids?.length && list.share_screen_ids?.[0] === id ? EInvoice.SHARING_SCREEN : EInvoice.INVOICE
+								status: list.share_screen_ids?.length && listShare.has(id) ? EInvoice.SHARING_SCREEN : EInvoice.INVOICE
 							};
 						}
 					}
