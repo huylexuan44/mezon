@@ -370,13 +370,16 @@ function parseMarkdownLinks(html: string) {
 
 	const codeSections: string[] = [];
 	let result = html;
+	console.log('result: ', result);
 
 	result = result.replace(/```[\s\S]*?```/g, (match) => {
 		const index = codeSections.length;
 
 		const div = document.createElement('div');
 		div.innerHTML = match;
-
+		div.querySelectorAll('br').forEach((br) => {
+			br.replaceWith('\n');
+		});
 		const text = div.textContent?.trim();
 		if (text) {
 			codeSections.push(text);
@@ -390,7 +393,9 @@ function parseMarkdownLinks(html: string) {
 		}
 		const div = document.createElement('div');
 		div.innerHTML = match;
-
+		div.querySelectorAll('br').forEach((br) => {
+			br.replaceWith('\n');
+		});
 		const text = div.textContent?.trim();
 		const index = codeSections.length;
 		if (text) {
