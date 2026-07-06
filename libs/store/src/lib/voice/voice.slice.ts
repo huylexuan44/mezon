@@ -469,7 +469,8 @@ export const voiceSlice = createSlice({
 							state.listInVoiceStatus[id] = {
 								clanId,
 								channelId,
-								status: list.share_screen_ids?.length ? EInvoice.SHARING_SCREEN : EInvoice.INVOICE
+								status:
+									list.share_screen_ids?.length && list.share_screen_ids?.[0] === id ? EInvoice.SHARING_SCREEN : EInvoice.INVOICE
 							};
 						}
 					}
