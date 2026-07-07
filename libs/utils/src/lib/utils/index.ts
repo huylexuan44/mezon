@@ -26,6 +26,7 @@ import { ChannelStreamMode, ChannelType, safeJSONParse } from 'mezon-js';
 import type React from 'react';
 import Resizer from 'react-image-file-resizer';
 import { CURRENCY, ID_MENTION_HERE } from '../constant';
+import { Platform } from '../hooks/platform';
 import type {
 	ChannelMembersEntity,
 	IAttachmentEntity,
@@ -55,6 +56,7 @@ import { getLinkType } from './embed-social';
 import { getPreSendSourceFile, getPreSendThumbnailBlob } from './file';
 import { Foreman } from './foreman';
 import { isMezonCdnUrl, isTenorUrl } from './urlSanitization';
+import { getPlatform, isElectron } from './windowEnvironment';
 export * from './animateScroll';
 export * from './audio';
 export * from './buildClassName';
@@ -973,6 +975,10 @@ export const sortChannelsByLastActivity = (channels: IChannel[]): IChannel[] => 
 export const checkIsThread = (channel?: IChannel) => {
 	return channel?.type === ChannelType.CHANNEL_TYPE_THREAD || (channel?.parent_id && channel?.parent_id !== '0');
 };
+
+export const isWindowsDesktop = getPlatform() === Platform.WINDOWS && isElectron();
+export const isMacDesktop = getPlatform() === Platform.MACOS && isElectron();
+export const isLinuxDesktop = getPlatform() === Platform.LINUX && isElectron();
 
 type ImgproxyOptions = {
 	width?: number;

@@ -13,6 +13,7 @@ import { SubPanelName } from '@mezon/utils';
 import { ChannelType } from 'mezon-js';
 import { useDispatch, useSelector } from 'react-redux';
 import { Outlet } from 'react-router-dom';
+import { getHeightWithoutTopBarClass } from './desktopWindowChrome';
 import ReactionEmojiPanel from './ReactionEmojiPanel';
 
 const ChannelLayout = () => {
@@ -41,13 +42,15 @@ const ChannelLayout = () => {
 	};
 	const shouldRender = useIdleRender();
 
+	const heightWithoutTopBarClass = getHeightWithoutTopBarClass(closeMenu);
+
 	return (
 		<div
 			onMouseDown={onMouseDown}
 			className={`flex flex-col ${openEmojiPanelOnTopic || subPanelActive !== SubPanelName.NONE || isFocusThreadBox ? 'z-20 relative' : 'z-0'} flex-1 shrink min-w-0 bg-transparent h-[100%] overflow-visible justify-end relative`}
 		>
 			<div
-				className={`flex flex-row ${closeMenu ? 'h-heightWithoutTopBarMobile' : 'h-heightWithoutTopBar'} ${isChannelStream ? 'justify-center items-center mx-4' : ''}`}
+				className={`flex flex-row ${heightWithoutTopBarClass} ${isChannelStream ? 'justify-center items-center mx-4' : ''}`}
 			>
 				<Outlet />
 			</div>

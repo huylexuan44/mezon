@@ -1,0 +1,10 @@
+// IMPORTANT: keep in sync with prod desktop `apps/desktop/src/app/events/constants.ts`
+export const TITLE_BAR_ACTION = 'APP::TITLE_BAR_ACTION';
+export const MAC_WINDOWS_ACTION = 'APP::MAC_WINDOWS_ACTION';
+export const IMAGE_WINDOW_TITLE_BAR_ACTION = 'APP::IMAGE_WINDOW_TITLE_BAR_ACTION';
+export const MINIMIZE_WINDOW = 'APP::MINIMIZE_WINDOW';
+export const UNMAXIMIZE_WINDOW = 'APP::UNMAXIMIZE_WINDOW';
+export const MAXIMIZE_WINDOW = 'APP::MAXIMIZE_WINDOW';
+export const CLOSE_APP = 'APP::CLOSE_APP';
+export const GET_WINDOW_STATE = 'APP::GET_WINDOW_STATE';
+export const WINDOW_STATE_CHANGED = 'APP::WINDOW_STATE_CHANGED';

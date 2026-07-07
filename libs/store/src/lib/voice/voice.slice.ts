@@ -18,9 +18,14 @@ export interface VoiceEntity extends ApiVoiceChannelUser {
 	id: string; // Primary ID
 }
 
+export enum EInvoice {
+	INVOICE,
+	SHARING_SCREEN
+}
 export interface InVoiceInfor {
 	clanId: string;
 	channelId: string;
+	status: EInvoice;
 }
 export interface VoiceState {
 	voiceInfo: IvoiceInfo | null;
@@ -272,7 +277,8 @@ export const voiceSlice = createSlice({
 			if (user_id) {
 				state.listInVoiceStatus[user_id] = {
 					clanId: clan_id,
-					channelId: channel_id
+					channelId: channel_id,
+					status: EInvoice.INVOICE
 				};
 			}
 		},
@@ -453,6 +459,7 @@ export const voiceSlice = createSlice({
 				users.forEach((list) => {
 					const listUser = list.user_ids;
 					const channelId = list.channel_id;
+					const listShare = new Set(list.share_screen_ids);
 
 					if (!listUser || !channelId) return;
 
@@ -460,7 +467,11 @@ export const voiceSlice = createSlice({
 					for (const id of listUser) {
 						if (id.length === LENGHT_USER_ID) {
 							listIdInVoice.push(id);
-							state.listInVoiceStatus[id] = { clanId, channelId };
+							state.listInVoiceStatus[id] = {
+								clanId,
+								channelId,
+								status: list.share_screen_ids?.length && listShare.has(id) ? EInvoice.SHARING_SCREEN : EInvoice.INVOICE
+							};
 						}
 					}
 					state.listVoiceMemberByClan[clanId][channelId] = listIdInVoice;
