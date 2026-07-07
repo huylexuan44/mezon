@@ -376,7 +376,9 @@ function parseMarkdownLinks(html: string) {
 
 		const div = document.createElement('div');
 		div.innerHTML = match;
-
+		div.querySelectorAll('br').forEach((br) => {
+			br.replaceWith('\n');
+		});
 		const text = div.textContent?.trim();
 		if (text) {
 			codeSections.push(text);
@@ -390,7 +392,9 @@ function parseMarkdownLinks(html: string) {
 		}
 		const div = document.createElement('div');
 		div.innerHTML = match;
-
+		div.querySelectorAll('br').forEach((br) => {
+			br.replaceWith('\n');
+		});
 		const text = div.textContent?.trim();
 		const index = codeSections.length;
 		if (text) {
