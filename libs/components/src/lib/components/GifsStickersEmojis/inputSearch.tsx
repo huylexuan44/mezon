@@ -8,7 +8,6 @@ import { useDebouncedCallback } from 'use-debounce';
 export const InputSearch: React.FC = () => {
 	const { t } = useTranslation('message');
 	const { subPanelActive } = useGifsStickersEmoji();
-	const { fetchGifsDataSearch } = useGifs();
 	const [valueSearchGif, setValueSearchGif] = useState('');
 	const [valueInput, setValueInput] = useState<string>('');
 	const searchInputRef = useRef<HTMLInputElement | null>(null);
@@ -33,12 +32,6 @@ export const InputSearch: React.FC = () => {
 		debouncedSetValueSearchGif(trimmedValue);
 		setValueInputSearch(valueInput);
 	}, [valueInput]);
-
-	useEffect(() => {
-		if (subPanelActive === SubPanelName.GIFS && valueSearchGif.trim() !== '') {
-			fetchGifsDataSearch(valueSearchGif);
-		}
-	}, [valueSearchGif]);
 
 	useEffect(() => {
 		if (subPanelActive !== SubPanelName.NONE) {
