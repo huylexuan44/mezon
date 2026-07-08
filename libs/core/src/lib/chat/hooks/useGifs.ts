@@ -22,6 +22,17 @@ export function useGifs() {
 	const categoriesStatus = useSelector(selectCategoriesStatus);
 	const buttonArrowBackStatus = useSelector(selectButtonArrowBackStatus);
 
+	const fetchGifsDataSearch = useCallback(
+		(valueSearch: string) => {
+			dispatch(gifsActions.fetchGifsDataSearch(valueSearch));
+		},
+		[dispatch]
+	);
+
+	const fetchGifsDataFeatured = useCallback(() => {
+		dispatch(gifsActions.fetchGifCategoryFeatured());
+	}, [dispatch]);
+
 	const setClickedTrendingGif = useCallback(
 		(status: boolean) => {
 			dispatch(gifsActions.setClickedTrendingGif(status));
@@ -43,9 +54,11 @@ export function useGifs() {
 	);
 	return useMemo(
 		() => ({
+			fetchGifsDataSearch,
 			dataGifCategories,
 			dataGifsSearch,
 			loadingStatusGifs,
+			fetchGifsDataFeatured,
 			dataGifsFeartured,
 			trendingClickingStatus,
 			setClickedTrendingGif,
@@ -56,8 +69,10 @@ export function useGifs() {
 		}),
 		[
 			dataGifCategories,
+			fetchGifsDataSearch,
 			dataGifsSearch,
 			loadingStatusGifs,
+			fetchGifsDataFeatured,
 			dataGifsFeartured,
 			trendingClickingStatus,
 			setClickedTrendingGif,
