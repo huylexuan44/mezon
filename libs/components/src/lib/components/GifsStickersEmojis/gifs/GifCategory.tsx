@@ -1,4 +1,5 @@
 import { useGifs, useGifsStickersEmoji } from '@mezon/core';
+import { fetchGifsDataSearch } from '@mezon/store';
 import type { IGifCategory } from '@mezon/utils';
 import { createImgproxyUrl, generateE2eId } from '@mezon/utils';
 
@@ -7,7 +8,7 @@ type GifCategoryProps = {
 };
 
 function GifCategory({ gifCategory }: GifCategoryProps) {
-	const { setButtonArrowBack, fetchGifsDataSearch, setShowCategories, setClickedTrendingGif } = useGifs();
+	const { setButtonArrowBack, setShowCategories, setClickedTrendingGif } = useGifs();
 	const { setValueInputSearch } = useGifsStickersEmoji();
 	const clickedCategory = () => {
 		fetchGifsDataSearch(gifCategory.category);
