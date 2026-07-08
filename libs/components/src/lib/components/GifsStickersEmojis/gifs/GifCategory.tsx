@@ -7,10 +7,9 @@ type GifCategoryProps = {
 };
 
 function GifCategory({ gifCategory }: GifCategoryProps) {
-	const { setButtonArrowBack, fetchGifsDataSearch, setShowCategories, setClickedTrendingGif } = useGifs();
+	const { setButtonArrowBack, setShowCategories, setClickedTrendingGif } = useGifs();
 	const { setValueInputSearch } = useGifsStickersEmoji();
 	const clickedCategory = () => {
-		fetchGifsDataSearch(gifCategory.searchterm);
 		setValueInputSearch(gifCategory.searchterm);
 		setShowCategories(false);
 		setClickedTrendingGif(false);
