@@ -43,18 +43,22 @@ export default function InvitePage() {
 					const channel = { ...selectInvite, id: selectInvite.channel_id as string };
 					dispatch(channelsActions.add({ clanId: selectInvite.channel_desc?.clan_id as string, channel: { ...channel, active: 1 } }));
 				}
+				return true;
 			} catch (err) {
 				setError(t('invite.failedToJoin'));
 			} finally {
 				setLoading(false);
 			}
 		}
+		return false;
 	};
 
-	const handleJoinChannel = () => {
-		joinChannel();
+	const handleJoinChannel = async () => {
+		const result = await joinChannel();
 		handleBackNavigate();
-		navigate(`/mezon`);
+		if (!result) {
+			navigate(`/mezon`);
+		}
 		try {
 			window.location.href = `mezon.ai://invite/${inviteIdParam}`;
 			setLoading(false);
