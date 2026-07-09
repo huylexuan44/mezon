@@ -38,6 +38,7 @@ export default function InviteAcceptModal({ inviteId, onClose, showModal }: Invi
 						onClose();
 					}
 				});
+				await new Promise((resolve) => setTimeout(resolve, 1000));
 				dispatch(clansActions.fetchClans({ noCache: true }));
 				if (selectInvite.channel_desc) {
 					const channel = { ...selectInvite, id: selectInvite.channel_id as string };
@@ -51,14 +52,15 @@ export default function InviteAcceptModal({ inviteId, onClose, showModal }: Invi
 	};
 
 	const handleJoinChannel = () => {
-		joinChannel();
 		dispatch(inviteActions.setIsClickInvite(false));
 		const clan = selectClanById(clanId);
 		if (userJoined || !!clan) {
 			toast.info(t('acceptModal.toast.alreadyMember'));
 			navigate(`/chat/clans/${clanId}/channels/${channelId}`);
 			onClose();
+			return;
 		}
+		joinChannel();
 	};
 
 	const handleClose = () => {
