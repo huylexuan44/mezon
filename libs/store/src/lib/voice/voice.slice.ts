@@ -3,6 +3,7 @@ import { INITIAL_NOISE_SUPPRESSION_PERCENTAGE, LENGHT_USER_ID, type IvoiceInfo, 
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
 import type { ApiGenerateMeetTokenResponse, ApiVoiceChannelUser, ChannelType, VoiceLeavedEvent } from 'mezon-js';
+import type { ScreenShareEvent } from 'node_modules/mezon-js-protobuf/dist/rtapi/realtime';
 import type { CacheMetadata } from '../cache-metadata';
 import { createApiKey, createCacheMetadata, markApiFirstCalled, shouldForceApiCall } from '../cache-metadata';
 import type { MezonValueContext } from '../helpers';
@@ -434,6 +435,15 @@ export const voiceSlice = createSlice({
 				if (state.listInVoiceStatus[key].channelId === channelId) {
 					delete state.listInVoiceStatus[key];
 				}
+			}
+		},
+		updateShareStatus: (state, action: PayloadAction<ScreenShareEvent>) => {
+			const event = action.payload;
+			if (state.listInVoiceStatus[event.user_id]) {
+				state.listInVoiceStatus[event.user_id] = {
+					...state.listInVoiceStatus[event.user_id],
+					status: event.is_sharing ? EInvoice.SHARING_SCREEN : EInvoice.INVOICE
+				};
 			}
 		}
 		// ...

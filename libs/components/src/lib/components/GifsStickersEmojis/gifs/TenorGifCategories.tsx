@@ -1,4 +1,5 @@
 import { useChatSending, useCurrentInbox, useEscapeKeyClose, useGifs, useGifsStickersEmoji } from '@mezon/core';
+import type { GifEntity } from '@mezon/store';
 import { referencesActions, selectDataReferences, useAppSelector } from '@mezon/store';
 import { Loading } from '@mezon/ui';
 import type { IGifCategory } from '@mezon/utils';
@@ -36,7 +37,7 @@ function TenorGifCategories({ channelOrDirect, mode, onClose, isTopic = false }:
 	} = useGifs();
 
 	const { valueInputToCheckHandleSearch } = useGifsStickersEmoji();
-	const [dataToRenderGifs, setDataToRenderGifs] = useState<any>();
+	const [dataToRenderGifs, setDataToRenderGifs] = useState<GifEntity[]>();
 	const { setSubPanelActive } = useGifsStickersEmoji();
 
 	const ontrendingClickingStatus = () => {
@@ -91,7 +92,7 @@ function TenorGifCategories({ channelOrDirect, mode, onClose, isTopic = false }:
 				/>
 
 				{Array.isArray(dataGifCategories) &&
-					dataGifCategories.map((item: IGifCategory, index: number) => <GifCategory gifCategory={item} key={index + item.name} />)}
+					dataGifCategories.map((item: IGifCategory, index: number) => <GifCategory gifCategory={item} key={index + item.category} />)}
 			</div>
 		);
 	};
@@ -104,8 +105,8 @@ function TenorGifCategories({ channelOrDirect, mode, onClose, isTopic = false }:
 			<div className="mx-2 flex justify-center h-[400px] overflow-y-scroll hide-scrollbar flex-wrap">
 				<div className="grid grid-cols-3  gap-1">
 					{dataToRenderGifs &&
-						dataToRenderGifs.map((gif: any, index: number) => {
-							const gifUrl = gif.media_formats?.gif?.url || '';
+						dataToRenderGifs.map((gif: GifEntity, index: number) => {
+							const gifUrl = gif.url || '';
 							return (
 								<div
 									key={gif.id}

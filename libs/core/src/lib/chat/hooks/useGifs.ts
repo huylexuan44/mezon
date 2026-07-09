@@ -8,7 +8,7 @@ import {
 	selectLoadingStatusGifs,
 	selectTrendingClickingStatus
 } from '@mezon/store';
-import { ThunkDispatch } from '@reduxjs/toolkit';
+import type { ThunkDispatch } from '@reduxjs/toolkit';
 import { useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
