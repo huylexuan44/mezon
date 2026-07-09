@@ -42,7 +42,6 @@ export const initialGifsState: GifsState = {
 };
 
 const apiKey = process.env.NX_CHAT_APP_API_TENOR_KEY;
-const clientKey = process.env.NX_CHAT_APP_API_CLIENT_KEY_CUSTOM;
 const limit = 30;
 
 export const fetchGifCategories = createAsyncThunk<GifCategoriesResponse>('gifs/fetchStatus', async (_, thunkAPI) => {

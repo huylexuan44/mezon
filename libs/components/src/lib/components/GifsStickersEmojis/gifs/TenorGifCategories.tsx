@@ -1,12 +1,11 @@
 import { useChatSending, useCurrentInbox, useEscapeKeyClose, useGifs, useGifsStickersEmoji } from '@mezon/core';
 import type { GifEntity } from '@mezon/store';
-import { referencesActions, selectDataReferences, useAppSelector } from '@mezon/store';
+import { gifsActions, referencesActions, selectDataReferences, useAppDispatch, useAppSelector } from '@mezon/store';
 import { Loading } from '@mezon/ui';
 import type { IGifCategory } from '@mezon/utils';
 import { EMimeTypes, SubPanelName, blankReferenceObj, generateE2eId } from '@mezon/utils';
 import type { ApiChannelDescription, ApiMessageRef } from 'mezon-js';
 import { useEffect, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import FeaturedGifs from './FeaturedGifs';
 import GifCategory from './GifCategory';
 
@@ -49,7 +48,7 @@ function TenorGifCategories({ channelOrDirect, mode, onClose, isTopic = false }:
 	const currentId = useCurrentInbox()?.channel_id;
 	const dataReferences = useAppSelector((state) => selectDataReferences(state, currentId ?? ''));
 	const isReplyAction = dataReferences.message_ref_id && dataReferences.message_ref_id !== '';
-	const dispatch = useDispatch();
+	const dispatch = useAppDispatch();
 
 	useEffect(() => {
 		if (dataGifsSearch.length > 0 && valueInputToCheckHandleSearch !== '') {
@@ -96,6 +95,12 @@ function TenorGifCategories({ channelOrDirect, mode, onClose, isTopic = false }:
 			</div>
 		);
 	};
+
+	useEffect(() => {
+		if (loadingStatusGifs === 'not loaded') {
+			dispatch(gifsActions.fetchGifCategories());
+		}
+	}, [loadingStatusGifs]);
 
 	const renderGifs = () => {
 		if (loadingStatusGifs === 'loading') {
