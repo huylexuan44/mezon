@@ -1,9 +1,8 @@
-import { appActions, clansActions, gifsActions } from '@mezon/store';
+import { appActions, clansActions } from '@mezon/store';
 import type { CustomLoaderFunction } from './appLoader';
 
 export const mainLoader: CustomLoaderFunction = async ({ dispatch }) => {
 	dispatch(clansActions.fetchClans({}));
-	dispatch(gifsActions.fetchGifCategories());
 	dispatch(appActions.setIsShowPopupQuickMess(false));
 	return null;
 };
