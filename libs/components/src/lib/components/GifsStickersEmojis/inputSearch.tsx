@@ -8,12 +8,18 @@ import { useDebouncedCallback } from 'use-debounce';
 export const InputSearch: React.FC = () => {
 	const { t } = useTranslation('message');
 	const { subPanelActive } = useGifsStickersEmoji();
-	const { fetchGifsDataSearch } = useGifs();
 	const [valueSearchGif, setValueSearchGif] = useState('');
 	const [valueInput, setValueInput] = useState<string>('');
 	const searchInputRef = useRef<HTMLInputElement | null>(null);
-	const { trendingClickingStatus, setClickedTrendingGif, categoriesStatus, setShowCategories, buttonArrowBackStatus, setButtonArrowBack } =
-		useGifs();
+	const {
+		trendingClickingStatus,
+		setClickedTrendingGif,
+		fetchGifsDataSearch,
+		categoriesStatus,
+		setShowCategories,
+		buttonArrowBackStatus,
+		setButtonArrowBack
+	} = useGifs();
 
 	const { setValueInputSearch, valuePlaceHolder } = useGifsStickersEmoji();
 
@@ -33,12 +39,6 @@ export const InputSearch: React.FC = () => {
 		debouncedSetValueSearchGif(trimmedValue);
 		setValueInputSearch(valueInput);
 	}, [valueInput]);
-
-	useEffect(() => {
-		if (subPanelActive === SubPanelName.GIFS && valueSearchGif.trim() !== '') {
-			fetchGifsDataSearch(valueSearchGif);
-		}
-	}, [valueSearchGif]);
 
 	useEffect(() => {
 		if (subPanelActive !== SubPanelName.NONE) {
@@ -74,6 +74,12 @@ export const InputSearch: React.FC = () => {
 				break;
 		}
 	}, [subPanelActive, valuePlaceHolder]);
+
+	useEffect(() => {
+		if (subPanelActive === SubPanelName.GIFS) {
+			fetchGifsDataSearch(valueSearchGif);
+		}
+	}, [valueSearchGif, subPanelActive]);
 
 	return (
 		<div className="flex flex-row items-center pt-4">
