@@ -2311,7 +2311,10 @@ const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ children, isM
 					}
 				}
 
-				dispatch(rolesClanActions.update({ role, clanId: role.clan_id as string }));
+				const roleToUpdate = { ...role };
+				delete roleToUpdate.role_user_list;
+				
+				dispatch(rolesClanActions.update({ role: roleToUpdate, clanId: role.clan_id as string }));
 				return;
 			}
 
