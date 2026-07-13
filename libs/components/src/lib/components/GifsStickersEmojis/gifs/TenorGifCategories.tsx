@@ -108,19 +108,19 @@ function TenorGifCategories({ channelOrDirect, mode, onClose, isTopic = false }:
 		}
 		return (
 			<div className="mx-2 flex justify-center h-[400px] overflow-y-scroll hide-scrollbar flex-wrap">
-				<div className="grid grid-cols-3  gap-1">
+				<div className="grid grid-cols-[repeat(3,minmax(0,1fr))] gap-1 w-full">
 					{dataToRenderGifs &&
 						dataToRenderGifs.map((gif: GifEntity, index: number) => {
 							const gifUrl = gif.url || '';
 							return (
 								<div
 									key={gif.id}
-									className={`order-${index} overflow-hidden cursor-pointer flex items-center justify-center bg-bgIconLight rounded-lg`}
+									className={`overflow-hidden aspect-square cursor-pointer flex items-center justify-center bg-bgIconLight rounded-lg`}
 									onClick={() => handleClickGif(gifUrl)}
 									role="button"
 									data-e2e={generateE2eId('mention.popover.gifs.item')}
 								>
-									<img src={gifUrl} alt={gifUrl} className="w-full h-auto object-contain max-h-full" />
+									<img src={gifUrl} alt={gifUrl} className="w-full h-full object-cover max-h-full" />
 								</div>
 							);
 						})}
@@ -131,7 +131,7 @@ function TenorGifCategories({ channelOrDirect, mode, onClose, isTopic = false }:
 	const modalRef = useRef<HTMLDivElement>(null);
 	useEscapeKeyClose(modalRef, onClose);
 	return (
-		<div ref={modalRef} tabIndex={-1} className="outline-none">
+		<div ref={modalRef} tabIndex={-1} className="outline-none w-full">
 			{categoriesStatus || (valueInputToCheckHandleSearch === '' && trendingClickingStatus === false) ? renderGifCategories() : renderGifs()}
 		</div>
 	);
