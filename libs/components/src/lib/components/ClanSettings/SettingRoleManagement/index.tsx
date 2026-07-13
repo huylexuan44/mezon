@@ -92,7 +92,7 @@ const ServerSettingRoleManagement = (props: EditNewRole) => {
 				dispatch(
 					usersClanActions.updateManyRoleIds({
 						clanId: currentClanId as string,
-						updates: addUsers.map((id) => ({ userId: id, roleId: respond.id, clanId: currentClanId }))
+						updates: addUsers.map((id) => ({ userId: id, roleId: respond.id || '', clanId: currentClanId }))
 					})
 				);
 			}
