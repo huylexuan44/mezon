@@ -27,12 +27,12 @@ function TenorGifCategories({ channelOrDirect, mode, onClose, isTopic = false }:
 		dataGifCategories,
 		dataGifsSearch,
 		loadingStatusGifs,
-		dataGifsFeartured,
 		trendingClickingStatus,
 		setClickedTrendingGif,
 		categoriesStatus,
 		setShowCategories,
-		setButtonArrowBack
+		setButtonArrowBack,
+		fetchGifTrending
 	} = useGifs();
 
 	const { valueInputToCheckHandleSearch } = useGifsStickersEmoji();
@@ -40,6 +40,7 @@ function TenorGifCategories({ channelOrDirect, mode, onClose, isTopic = false }:
 	const { setSubPanelActive } = useGifsStickersEmoji();
 
 	const ontrendingClickingStatus = () => {
+		fetchGifTrending();
 		setClickedTrendingGif(true);
 		setShowCategories(false);
 		setButtonArrowBack(true);
@@ -56,7 +57,7 @@ function TenorGifCategories({ channelOrDirect, mode, onClose, isTopic = false }:
 			setShowCategories(false);
 			setButtonArrowBack(true);
 		} else if (trendingClickingStatus) {
-			setDataToRenderGifs(dataGifsFeartured);
+			setDataToRenderGifs(dataGifsSearch);
 		} else if (valueInputToCheckHandleSearch === '') {
 			setButtonArrowBack(false);
 		}
