@@ -2311,7 +2311,10 @@ const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ children, isM
 					}
 				}
 
-				dispatch(rolesClanActions.update({ role, clanId: role.clan_id as string }));
+				const roleToUpdate = { ...role };
+				delete roleToUpdate.role_user_list;
+				
+				dispatch(rolesClanActions.update({ role: roleToUpdate, clanId: role.clan_id as string }));
 				return;
 			}
 
@@ -2473,7 +2476,7 @@ const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ children, isM
 			topicsActions.createTopicMeta({
 				lsnt: `${sdTopicEvent.last_sent_message?.timestamp_seconds || Date.now() / 1000}`,
 				message_id: sdTopicEvent?.message_id as string,
-				rpl: 1,
+				rpl: 0,
 				tp_id: sdTopicEvent.id
 			})
 		);
