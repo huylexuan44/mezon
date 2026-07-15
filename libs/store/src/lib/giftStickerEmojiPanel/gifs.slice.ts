@@ -42,7 +42,6 @@ export const initialGifsState: GifsState = {
 };
 
 const apiKey = process.env.NX_CHAT_APP_API_TENOR_KEY;
-const clientKey = process.env.NX_CHAT_APP_API_CLIENT_KEY_CUSTOM;
 const limit = 30;
 
 export const fetchGifCategories = createAsyncThunk<GifCategoriesResponse>('gifs/fetchStatus', async (_, thunkAPI) => {
@@ -79,9 +78,8 @@ export const fetchGifsDataSearch = createAsyncThunk<any, string>('gifs/fetchData
 	}
 });
 
-export const fetchGifCategoryFeatured = createAsyncThunk<GifEntity[]>('gifs/fetchDataTrending', async (_, thunkAPI) => {
-	const baseUrl = ' https://api.klipy.com/v1/search?q=';
-	const searchUrl = `${baseUrl}&key=${apiKey}&limit=${limit}`;
+export const fetchGifTrending = createAsyncThunk<GifEntity[]>('gifs/fetchDataTrending', async (_, thunkAPI) => {
+	const searchUrl = `https://api.klipy.com/api/v1/${apiKey}/stickers/trending?page=1&per_page=30&format_filter=gif`;
 
 	try {
 		const response = await fetch(`${searchUrl}`);
@@ -89,9 +87,9 @@ export const fetchGifCategoryFeatured = createAsyncThunk<GifEntity[]>('gifs/fetc
 			throw new Error('Failed to fetch gifs data');
 		}
 		const data = await response.json();
-		return data;
+		return data?.data || [];
 	} catch (error) {
-		captureSentryError(error, 'gifs/fetchDataTrending');
+		captureSentryError(error, 'gifs/fetchGifTrending');
 		return thunkAPI.rejectWithValue(error);
 	}
 });
@@ -148,14 +146,22 @@ export const gifsSlice = createSlice({
 				state.error = action.error.message;
 			});
 		builder
-			.addCase(fetchGifCategoryFeatured.pending, (state: GifsState) => {
+			.addCase(fetchGifTrending.pending, (state: GifsState) => {
 				state.loadingStatus = 'loading';
 			})
-			.addCase(fetchGifCategoryFeatured.fulfilled, (state: GifsState, action: PayloadAction<any>) => {
-				state.dataGifsFeatured = action.payload.results;
+			.addCase(fetchGifTrending.fulfilled, (state: GifsState, action: PayloadAction<any>) => {
+				const dataGif: GifEntity[] = action.payload.data.map((item: any) => {
+					return {
+						id: `${item.id}`,
+						slug: item.slug,
+						blur_preview: item?.blur_preview,
+						url: item?.file?.xs?.gif?.url
+					};
+				});
+				state.dataGifsSearch = dataGif;
 				state.loadingStatus = 'loaded';
 			})
-			.addCase(fetchGifCategoryFeatured.rejected, (state: GifsState, action) => {
+			.addCase(fetchGifTrending.rejected, (state: GifsState, action) => {
 				state.loadingStatus = 'error';
 				state.error = action.error.message;
 			});
@@ -168,7 +174,7 @@ export const gifsActions = {
 	...gifsSlice.actions,
 	fetchGifCategories,
 	fetchGifsDataSearch,
-	fetchGifCategoryFeatured
+	fetchGifTrending
 };
 
 const { selectAll } = gifsAdapter.getSelectors();

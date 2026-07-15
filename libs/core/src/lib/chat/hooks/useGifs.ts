@@ -29,8 +29,8 @@ export function useGifs() {
 		[dispatch]
 	);
 
-	const fetchGifsDataFeatured = useCallback(() => {
-		dispatch(gifsActions.fetchGifCategoryFeatured());
+	const fetchGifTrending = useCallback(() => {
+		dispatch(gifsActions.fetchGifTrending());
 	}, [dispatch]);
 
 	const setClickedTrendingGif = useCallback(
@@ -58,7 +58,7 @@ export function useGifs() {
 			dataGifCategories,
 			dataGifsSearch,
 			loadingStatusGifs,
-			fetchGifsDataFeatured,
+			fetchGifTrending,
 			dataGifsFeartured,
 			trendingClickingStatus,
 			setClickedTrendingGif,
@@ -72,7 +72,7 @@ export function useGifs() {
 			fetchGifsDataSearch,
 			dataGifsSearch,
 			loadingStatusGifs,
-			fetchGifsDataFeatured,
+			fetchGifTrending,
 			dataGifsFeartured,
 			trendingClickingStatus,
 			setClickedTrendingGif,
