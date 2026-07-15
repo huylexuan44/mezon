@@ -47,7 +47,7 @@ const GeneralInformation = () => {
 				try {
 					const response = await uploadImageToMinIO(result.url, file, file.size);
 					if (response) {
-						const url = `${process.env.NX_BASE_IMG_URL}/mezon/${result.filename}`;
+						const url = `${process.env.NX_BASE_IMG_URL}/${result.filename}`;
 						setAppLogoUrl(url);
 					}
 				} catch (error) {
