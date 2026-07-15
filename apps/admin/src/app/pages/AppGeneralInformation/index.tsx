@@ -46,7 +46,10 @@ const GeneralInformation = () => {
 			if (result.url) {
 				try {
 					const response = await uploadImageToMinIO(result.url, file, file.size);
-					setAppLogoUrl(response.url);
+					if (response) {
+						const url = `${process.env.NX_BASE_IMG_URL}/${filename}`;
+						setAppLogoUrl(url);
+					}
 				} catch (error) {
 					console.error(error);
 				}
