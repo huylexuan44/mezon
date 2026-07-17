@@ -733,7 +733,7 @@ function MessageContextMenu({
 				'addReaction', // id
 				t('addReaction'), // label
 				handleItemClick,
-				<Icons.RightArrowRightClick defaultSize="w-4 h-4" />
+				<Icons.Smile className="w-4 h-4" />
 			);
 		});
 
