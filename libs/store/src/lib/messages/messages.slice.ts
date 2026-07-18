@@ -18,6 +18,7 @@ import {
 	MessageCrypt,
 	TypeMessage,
 	getMessageCreateTimeSeconds,
+	getMobileUploadedAttachments,
 	getPublicKeys,
 	getWebUploadedAttachments,
 	isFacebookLink,
@@ -1027,7 +1028,11 @@ export const sendMessageViaApi = createAsyncThunk('messages/sendMessageViaApi', 
 
 			let uploadedFiles: ApiMessageAttachment[] = [];
 			if (attachments && attachments.length > 0) {
-				uploadedFiles = await getWebUploadedAttachments({ attachments, client, session });
+				if (isMobile) {
+					uploadedFiles = await getMobileUploadedAttachments({ attachments, client, session });
+				} else {
+					uploadedFiles = await getWebUploadedAttachments({ attachments, client, session });
+				}
 				thunkAPI.dispatch(
 					messagesActions.updateSendingMessageAttachments({
 						channelId,
@@ -1180,12 +1185,19 @@ export const sendMessage = createAsyncThunk('messages/sendMessage', async (paylo
 
 		let uploadedFiles: ApiMessageAttachment[] = [];
 		if (attachments && attachments.length > 0) {
-			uploadedFiles = await getWebUploadedAttachments({
-				attachments,
-				client,
-				session
-			});
-
+			if (isMobile) {
+				uploadedFiles = await getMobileUploadedAttachments({
+					attachments,
+					client,
+					session
+				});
+			} else {
+				uploadedFiles = await getWebUploadedAttachments({
+					attachments,
+					client,
+					session
+				});
+			}
 			thunkAPI.dispatch(
 				messagesActions.updateSendingMessageAttachments({
 					channelId: channelId as string,
