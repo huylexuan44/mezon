@@ -290,12 +290,14 @@ export const refreshApp = createAsyncThunk('app/refreshApp', async (payload: Ref
 
 	if (!allowed) {
 		console.warn('[refreshApp] Rate limited:', reason);
-		if (!skipReconnectWarmup) {
-			try {
+		try {
+			if (skipReconnectWarmup) {
+				await syncActiveChannelAfterReconnect(thunkAPI, thunkAPI.getState() as RootState);
+			} else {
 				await syncMinimalAfterReconnect(thunkAPI, state);
-			} catch (error) {
-				captureSentryError(error, 'app/refreshApp/minimal');
 			}
+		} catch (error) {
+			captureSentryError(error, 'app/refreshApp/minimal');
 		}
 		return thunkAPI.rejectWithValue({ rateLimited: true, reason });
 	}
@@ -312,6 +314,10 @@ export const refreshApp = createAsyncThunk('app/refreshApp', async (payload: Ref
 			thunkAPI.dispatch(clansActions.clearJoinList());
 			await syncActiveChannelAfterReconnect(thunkAPI, state);
 			await dispatchStaggeredJoinClans(thunkAPI, currentClanId);
+		} else {
+			// Safety net: reconnectSync should have fetched already, but refetch if it
+			// was skipped (path mismatch), failed, or timers were cancelled.
+			await syncActiveChannelAfterReconnect(thunkAPI, thunkAPI.getState() as RootState);
 		}
 
 		const fetchClansPromise = thunkAPI.dispatch(clansActions.fetchClans({}));
