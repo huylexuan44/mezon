@@ -1134,25 +1134,6 @@ export const editMessageViaApi = createAsyncThunk('messages/editMessageViaApi', 
 	}
 });
 
-// export const addFakeMessage = createAsyncThunk('messages/addFakeMessage', async (message: ChannelMessageWithClientMeta, thunkAPI) => {
-// 	const state = getMessagesState(getMessagesRootState(thunkAPI));
-// 	const fakeMess = await thunkAPI
-// 		.dispatch(
-// 			messagesActions.mapMessageChannelToEntityAction({
-// 				message
-// 			})
-// 		)
-// 		.unwrap();
-// 	console.log('state.channelMessages[message.channel_id]: ', state.channelMessages[message.channel_id].ids.length);
-// 	try {
-// 		state.channelMessages[message.channel_id] = channelMessagesAdapter.addOne(state.channelMessages[message.channel_id], fakeMess);
-// 	} catch (e) {
-// 		console.error(e);
-// 	}
-// 	console.log('state.channelMessages[message.channel_id]: ', state.channelMessages[message.channel_id].ids.length);
-// 	return true;
-// });
-
 export const sendMessage = createAsyncThunk('messages/sendMessage', async (payload: SendMessagePayload, thunkAPI) => {
 	const {
 		mentions,
