@@ -56,25 +56,6 @@ const trackRefreshAttempt = () => {
 	refreshAttempts.push(Date.now());
 };
 
-// Nhường main thread một nhịp giữa các đợt dispatch của refreshApp.
-// Cả loạt dispatch chạy đồng bộ sẽ chẹn main thread -> WS không được drain ->
-// write queue phía server đầy -> server đóng connection ("slow client", 5s).
-// Dùng MessageChannel thay setTimeout: không bị browser throttle khi tab ở nền,
-// và không cần hằng số thời gian nào để mục.
-const yieldToMain = (): Promise<void> =>
-	new Promise((resolve) => {
-		if (typeof MessageChannel === 'undefined') {
-			resolve();
-			return;
-		}
-		const channel = new MessageChannel();
-		channel.port1.onmessage = () => {
-			channel.port1.close();
-			resolve();
-		};
-		channel.port2.postMessage(undefined);
-	});
-
 export interface showSettingFooterProps {
 	status: boolean;
 	initTab: string;
@@ -220,21 +201,14 @@ export const refreshApp = createAsyncThunk('app/refreshApp', async (_, thunkAPI)
 				})
 			);
 
-		await yieldToMain();
-
 		thunkAPI.dispatch(clansActions.joinClan({ clanId: '0' }));
 		const fetchClansPromise = thunkAPI.dispatch(clansActions.fetchClans({}));
 		thunkAPI.dispatch(listChannelsByUserActions.fetchListChannelsByUser({}));
 
 		let fetchChannelsPromise: ReturnType<typeof thunkAPI.dispatch> | null = null;
 		if (isClanView && currentClanId) {
-			await yieldToMain();
-
 			thunkAPI.dispatch(usersClanActions.fetchUsersClan({ clanId: currentClanId }));
 			fetchChannelsPromise = thunkAPI.dispatch(channelsActions.fetchChannels({ clanId: currentClanId, noCache: true }));
-
-			await yieldToMain();
-
 			thunkAPI.dispatch(clansActions.joinClan({ clanId: currentClanId }));
 			thunkAPI.dispatch(
 				voiceActions.fetchVoiceChannelMembers({
@@ -244,8 +218,6 @@ export const refreshApp = createAsyncThunk('app/refreshApp', async (_, thunkAPI)
 				})
 			);
 		}
-
-		await yieldToMain();
 
 		thunkAPI.dispatch(directActions.fetchDirectMessage({ noCache: true }));
 
