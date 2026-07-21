@@ -2980,6 +2980,7 @@ const ChatContextProvider: React.FC<ChatContextProviderProps> = ({ children, isM
 	);
 
 	const ondisconnect = useCallback(() => {
+		console.error('SOCKET DISCONNECTED');
 		socketState.status = 'disconnected';
 		handleReconnect('Socket disconnected, attempting to reconnect...');
 	}, [handleReconnect]);
