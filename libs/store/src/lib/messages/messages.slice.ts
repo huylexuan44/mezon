@@ -17,6 +17,7 @@ import {
 	MessageCrypt,
 	PRESIGN_PENDING_MAX_AGE_SEC,
 	TypeMessage,
+	createLocalPreviewUrl,
 	getMessageCreateTimeSeconds,
 	getPublicKeys,
 	getWebUploadedAttachments,
@@ -24,7 +25,6 @@ import {
 	isTikTokLink,
 	isYouTubeLink,
 	mergePresignFinishContent,
-	createLocalPreviewUrl,
 	revokePreSendAttachmentUrls,
 	toPublicMessageAttachments,
 	withCreateTimeSecondsInUpdateContent
@@ -2114,10 +2114,33 @@ export const messagesSlice = createSlice({
 			if (!existingMessage) {
 				return;
 			}
-			existingMessage.attachments?.forEach(revokePreSendAttachmentUrls);
+
+			// Three senders reach this: an anonymous send and the REST fallback,
+			// both of which upload before they post, and the presign path after
+			// its upload (where the row has usually taken the server's id by now,
+			// so the lookup above misses and nothing happens). What lands here is
+			// public metadata — a CDN url and no local copy — and handing the row
+			// that alone sends the sender to the image proxy for an object
+			// uploaded seconds ago, the request that pins a failure in that
+			// cache for a week. The picture stays; only the wire payload is
+			// public.
+			const previous = existingMessage.attachments ?? [];
+			const spare = [...previous];
+			const carried = new Set<string>();
+			const withLocalSource = attachments.map((attachment) => {
+				const at = spare.findIndex((p) => p.local_source && p.filename === attachment.filename);
+				if (at === -1) {
+					return attachment;
+				}
+				const [match] = spare.splice(at, 1);
+				carried.add(match.local_source as string);
+				return { ...attachment, local_source: match.local_source };
+			});
+
+			previous.forEach((attachment) => revokePreSendAttachmentUrls(attachment, carried));
 			channelMessagesAdapter.updateOne(channelEntity, {
 				id: messageId,
-				changes: { attachments }
+				changes: { attachments: withLocalSource }
 			});
 		},
 		applyPresignRefresh: (state, action: PayloadAction<{ channelId: string; messageId: string; presignFinish: string[] }>) => {
